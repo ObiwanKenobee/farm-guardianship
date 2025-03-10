@@ -1,8 +1,9 @@
 
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useWallet } from '../../context/WalletContext';
 import { Button } from '@/components/ui/button';
-import { Wallet, Menu, X } from 'lucide-react';
+import { Wallet, Menu, X, Info, Globe } from 'lucide-react';
 
 const Navbar = () => {
   const { walletAddress, balance, connectWallet, isConnecting } = useWallet();
@@ -35,21 +36,23 @@ const Navbar = () => {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center">
-          <span className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-guardian-green to-guardian-blue">
+          <Link to="/" className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-guardian-green to-guardian-blue">
             Guardian-IO
-          </span>
+          </Link>
         </div>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
+          <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors flex items-center">
+            <Info className="mr-1.5 h-4 w-4" />
+            About
+          </Link>
+          <Link to="/ecosystem" className="text-sm font-medium hover:text-primary transition-colors flex items-center">
+            <Globe className="mr-1.5 h-4 w-4" />
+            Ecosystem
+          </Link>
           <a href="#features" className="text-sm font-medium hover:text-primary transition-colors">
             Features
-          </a>
-          <a href="#about" className="text-sm font-medium hover:text-primary transition-colors">
-            About
-          </a>
-          <a href="#ecosystem" className="text-sm font-medium hover:text-primary transition-colors">
-            Ecosystem
           </a>
           <Button 
             variant="outline" 
@@ -72,14 +75,16 @@ const Navbar = () => {
       {/* Mobile Navigation */}
       {menuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-md shadow-lg p-5 flex flex-col space-y-4 animate-fade-in">
+          <Link to="/about" className="text-sm font-medium hover:text-primary flex items-center" onClick={() => setMenuOpen(false)}>
+            <Info className="mr-1.5 h-4 w-4" />
+            About
+          </Link>
+          <Link to="/ecosystem" className="text-sm font-medium hover:text-primary flex items-center" onClick={() => setMenuOpen(false)}>
+            <Globe className="mr-1.5 h-4 w-4" />
+            Ecosystem
+          </Link>
           <a href="#features" className="text-sm font-medium hover:text-primary" onClick={() => setMenuOpen(false)}>
             Features
-          </a>
-          <a href="#about" className="text-sm font-medium hover:text-primary" onClick={() => setMenuOpen(false)}>
-            About
-          </a>
-          <a href="#ecosystem" className="text-sm font-medium hover:text-primary" onClick={() => setMenuOpen(false)}>
-            Ecosystem
           </a>
           <Button 
             variant="outline" 
