@@ -1,15 +1,24 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../context/WalletContext';
 import { Button } from '@/components/ui/button';
-import { Wallet, Copy, LogOut } from 'lucide-react';
+import { Wallet, Copy, LogOut, ChevronDown, User, Users, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 const WalletConnect = () => {
-  const { walletAddress, balance, connectWallet, disconnectWallet, isConnecting } = useWallet();
+  const { walletAddress, balance, connectWallet, disconnectWallet, isConnecting, connectDemo, isDemoMode } = useWallet();
   const navigate = useNavigate();
   const sectionRef = useRef<HTMLDivElement>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -54,6 +63,14 @@ const WalletConnect = () => {
     }
   };
 
+  const handleDemoConnect = (role: string) => {
+    connectDemo(`0x${role}Demo1234`);
+    // After connecting demo, navigate to dashboard
+    setTimeout(() => {
+      navigate('/dashboard');
+    }, 300);
+  };
+
   return (
     <section ref={sectionRef} id="wallet" className="py-20 px-6 md:px-10 opacity-0">
       <div className="max-w-4xl mx-auto">
@@ -65,15 +82,48 @@ const WalletConnect = () => {
           </p>
           
           {!walletAddress ? (
-            <Button 
-              size="lg"
-              className="flex items-center gap-2 px-8 py-6 mx-auto"
-              onClick={handleConnect}
-              disabled={isConnecting}
-            >
-              <Wallet className="mr-2 h-5 w-5" />
-              {isConnecting ? 'Connecting...' : 'Connect Wallet'}
-            </Button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button 
+                size="lg"
+                className="flex items-center gap-2 px-8 py-6"
+                onClick={handleConnect}
+                disabled={isConnecting}
+              >
+                <Wallet className="mr-2 h-5 w-5" />
+                {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+              </Button>
+              
+              <div className="relative">
+                <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="lg"
+                      className="flex items-center gap-2 px-8 py-6"
+                    >
+                      <span className="text-sm">Demo Access</span>
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuLabel>Select Role</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleDemoConnect('Farmer')} className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4 text-green-600" />
+                      <span>Farmer</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleDemoConnect('Buyer')} className="cursor-pointer">
+                      <Users className="mr-2 h-4 w-4 text-blue-600" />
+                      <span>Buyer</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleDemoConnect('Admin')} className="cursor-pointer">
+                      <ShieldAlert className="mr-2 h-4 w-4 text-purple-600" />
+                      <span>Admin</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
           ) : (
             <div className="space-y-6">
               <div className="bg-secondary/50 backdrop-blur-sm rounded-xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4 max-w-md mx-auto">
@@ -82,9 +132,13 @@ const WalletConnect = () => {
                     <Wallet className="h-5 w-5 text-guardian-green" />
                   </div>
                   <div className="text-left">
-                    <p className="text-sm text-foreground/60">Connected Wallet</p>
+                    <p className="text-sm text-foreground/60">
+                      {isDemoMode ? 'Demo Mode' : 'Connected Wallet'}
+                    </p>
                     <p className="font-medium">
-                      {`${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}`}
+                      {walletAddress.includes('Demo') 
+                        ? walletAddress 
+                        : `${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}`}
                     </p>
                   </div>
                 </div>
@@ -131,6 +185,13 @@ const WalletConnect = () => {
                   Go to Dashboard
                 </Button>
               </div>
+            </div>
+          )}
+          
+          {/* Demo mode indicator */}
+          {isDemoMode && (
+            <div className="mt-6 text-amber-600 text-sm font-medium bg-amber-100 p-2 rounded-md inline-block">
+              ⚠️ Demo Mode Active - No actual blockchain transactions will occur
             </div>
           )}
         </div>

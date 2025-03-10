@@ -6,8 +6,8 @@ import { useWallet } from '../../context/WalletContext';
 import { Loader2 } from 'lucide-react';
 
 const DashboardRedirect = () => {
-  const { userRole, isLoadingRole } = useUser();
-  const { walletAddress } = useWallet();
+  const { userRole, isLoadingRole, setUserRole } = useUser();
+  const { walletAddress, isDemoMode } = useWallet();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,6 +15,18 @@ const DashboardRedirect = () => {
       // If wallet is not connected, redirect to home
       navigate('/');
       return;
+    }
+
+    // Check if we're in demo mode and extract role from wallet address
+    if (isDemoMode && walletAddress.includes('Demo')) {
+      const demoRoles = ['Farmer', 'Buyer', 'Admin'];
+      const matchedRole = demoRoles.find(role => walletAddress.includes(role));
+      
+      if (matchedRole && (!userRole || userRole !== matchedRole)) {
+        // Set the role from the demo wallet address
+        setUserRole(matchedRole as any);
+        return; // Let the next useEffect cycle handle the redirect
+      }
     }
 
     if (!isLoadingRole && userRole) {
@@ -27,7 +39,7 @@ const DashboardRedirect = () => {
         navigate('/dashboard/admin');
       }
     }
-  }, [userRole, isLoadingRole, walletAddress, navigate]);
+  }, [userRole, isLoadingRole, walletAddress, navigate, isDemoMode, setUserRole]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">
@@ -37,6 +49,9 @@ const DashboardRedirect = () => {
         <p className="text-sm text-muted-foreground">
           {isLoadingRole ? 'Assigning your role based on wallet...' : 'Redirecting to your personalized dashboard...'}
         </p>
+        {isDemoMode && (
+          <p className="text-amber-600 mt-2 text-sm font-medium">Demo Mode: Using pre-assigned role</p>
+        )}
       </div>
     </div>
   );

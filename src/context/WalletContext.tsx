@@ -8,6 +8,8 @@ interface WalletContextType {
   isConnecting: boolean;
   connectWallet: () => Promise<void>;
   disconnectWallet: () => void;
+  connectDemo: (address?: string) => void;
+  isDemoMode: boolean;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -16,6 +18,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [balance, setBalance] = useState<string>('0');
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
 
   // Check if the wallet is already connected
   useEffect(() => {
@@ -74,6 +77,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
           params: [accounts[0], 'latest'],
         });
         setBalance((parseInt(balance, 16) / 1e18).toFixed(4));
+        setIsDemoMode(false);
         
         toast.success('Wallet connected successfully');
       } catch (error) {
@@ -87,9 +91,19 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const connectDemo = (address?: string) => {
+    // Generate a fake address if none provided
+    const demoAddress = address || '0xDemo' + Math.floor(Math.random() * 10000).toString().padStart(4, '0') + '...';
+    setWalletAddress(demoAddress);
+    setBalance('99.9999'); // Demo balance
+    setIsDemoMode(true);
+    toast.success('Demo mode activated');
+  };
+
   const disconnectWallet = () => {
     setWalletAddress('');
     setBalance('0');
+    setIsDemoMode(false);
     toast.info('Wallet disconnected');
   };
 
@@ -101,6 +115,8 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         isConnecting,
         connectWallet,
         disconnectWallet,
+        connectDemo,
+        isDemoMode,
       }}
     >
       {children}

@@ -15,18 +15,31 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const { walletAddress } = useWallet();
+  const { walletAddress, isDemoMode } = useWallet();
   const [userRole, setUserRole] = useState<UserRole>(null);
   const [isLoadingRole, setIsLoadingRole] = useState<boolean>(false);
 
-  // Assign a random role when wallet is connected
+  // Assign a role when wallet is connected
   useEffect(() => {
-    const assignRandomRole = async () => {
+    const assignRole = async () => {
       // Only assign a role if wallet is connected and no role exists
       if (walletAddress && !userRole) {
         setIsLoadingRole(true);
         try {
-          // Simulate API delay
+          // Check if we're in demo mode
+          if (isDemoMode && walletAddress.includes('Demo')) {
+            const demoRoles = ['Farmer', 'Buyer', 'Admin'];
+            const matchedRole = demoRoles.find(role => walletAddress.includes(role));
+            
+            if (matchedRole) {
+              setUserRole(matchedRole as UserRole);
+              toast.success(`Demo mode: You've been assigned the ${matchedRole} role`);
+              setIsLoadingRole(false);
+              return;
+            }
+          }
+          
+          // For real wallets or if no demo role found in the address, assign randomly
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           // Randomly assign a role for demo purposes
@@ -49,8 +62,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    assignRandomRole();
-  }, [walletAddress, userRole]);
+    assignRole();
+  }, [walletAddress, userRole, isDemoMode]);
 
   return (
     <UserContext.Provider
