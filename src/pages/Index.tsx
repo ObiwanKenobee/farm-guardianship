@@ -1,13 +1,24 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { WalletProvider } from '../context/WalletContext';
+import Navbar from '../components/layout/Navbar';
+import HeroSection from '../components/HeroSection';
+import FeaturesSection from '../components/FeaturesSection';
+import WalletConnect from '../components/WalletConnect';
+import AnimatedGradient from '../components/AnimatedGradient';
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <WalletProvider>
+      <div className="relative min-h-screen overflow-hidden">
+        <AnimatedGradient />
+        <Navbar />
+        <main>
+          <HeroSection />
+          <FeaturesSection />
+          <WalletConnect />
+        </main>
       </div>
-    </div>
+    </WalletProvider>
   );
 };
 
