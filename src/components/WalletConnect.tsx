@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../context/WalletContext';
@@ -65,9 +64,15 @@ const WalletConnect = () => {
 
   const handleDemoConnect = (role: string) => {
     connectDemo(`0x${role}Demo1234`);
-    // After connecting demo, navigate to dashboard
+    // After connecting demo, navigate directly to role-specific dashboard
     setTimeout(() => {
-      navigate('/dashboard');
+      if (role === 'Farmer') {
+        navigate('/dashboard/farmer');
+      } else if (role === 'Buyer') {
+        navigate('/dashboard/buyer');
+      } else if (role === 'Admin') {
+        navigate('/dashboard/admin');
+      }
     }, 300);
   };
 
@@ -188,7 +193,6 @@ const WalletConnect = () => {
             </div>
           )}
           
-          {/* Demo mode indicator */}
           {isDemoMode && (
             <div className="mt-6 text-amber-600 text-sm font-medium bg-amber-100 p-2 rounded-md inline-block">
               ⚠️ Demo Mode Active - No actual blockchain transactions will occur
