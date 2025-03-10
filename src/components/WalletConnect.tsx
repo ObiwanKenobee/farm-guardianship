@@ -1,5 +1,6 @@
 
 import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../context/WalletContext';
 import { Button } from '@/components/ui/button';
 import { Wallet, Copy, LogOut } from 'lucide-react';
@@ -7,6 +8,7 @@ import { toast } from 'sonner';
 
 const WalletConnect = () => {
   const { walletAddress, balance, connectWallet, disconnectWallet, isConnecting } = useWallet();
+  const navigate = useNavigate();
   const sectionRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
@@ -40,6 +42,18 @@ const WalletConnect = () => {
     }
   };
 
+  const handleConnect = async () => {
+    if (!walletAddress) {
+      await connectWallet();
+      // After connecting, wait a moment and then navigate to dashboard
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 500);
+    } else {
+      navigate('/dashboard');
+    }
+  };
+
   return (
     <section ref={sectionRef} id="wallet" className="py-20 px-6 md:px-10 opacity-0">
       <div className="max-w-4xl mx-auto">
@@ -54,7 +68,7 @@ const WalletConnect = () => {
             <Button 
               size="lg"
               className="flex items-center gap-2 px-8 py-6 mx-auto"
-              onClick={connectWallet}
+              onClick={handleConnect}
               disabled={isConnecting}
             >
               <Wallet className="mr-2 h-5 w-5" />
@@ -98,15 +112,25 @@ const WalletConnect = () => {
                 </div>
               </div>
               
-              <Button 
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2 mt-4"
-                onClick={disconnectWallet}
-              >
-                <LogOut className="mr-1 h-4 w-4" />
-                Disconnect
-              </Button>
+              <div className="flex justify-center space-x-3 mt-6">
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                  onClick={disconnectWallet}
+                >
+                  <LogOut className="mr-1 h-4 w-4" />
+                  Disconnect
+                </Button>
+                
+                <Button 
+                  size="sm"
+                  className="flex items-center gap-2"
+                  onClick={() => navigate('/dashboard')}
+                >
+                  Go to Dashboard
+                </Button>
+              </div>
             </div>
           )}
         </div>

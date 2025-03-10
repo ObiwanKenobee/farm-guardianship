@@ -1,14 +1,17 @@
 
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useWallet } from '../../context/WalletContext';
+import { useUser } from '../../context/UserContext';
 import { Button } from '@/components/ui/button';
-import { Wallet, Menu, X, Info, Globe } from 'lucide-react';
+import { Wallet, Menu, X, Info, Globe, LogOut, LayoutDashboard } from 'lucide-react';
 
 const Navbar = () => {
-  const { walletAddress, balance, connectWallet, isConnecting } = useWallet();
+  const { walletAddress, balance, connectWallet, disconnectWallet, isConnecting } = useWallet();
+  const { userRole } = useUser();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   // Handle scroll effect
   useEffect(() => {
@@ -26,6 +29,24 @@ const Navbar = () => {
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
+  };
+
+  const handleConnectWallet = async () => {
+    if (walletAddress) {
+      // If already connected, go to dashboard
+      navigate('/dashboard');
+    } else {
+      // Connect wallet
+      await connectWallet();
+    }
+  };
+
+  const handleDisconnect = () => {
+    disconnectWallet();
+    // If on a dashboard page, redirect to home
+    if (window.location.pathname.includes('/dashboard')) {
+      navigate('/');
+    }
   };
 
   return (
@@ -51,19 +72,46 @@ const Navbar = () => {
             <Globe className="mr-1.5 h-4 w-4" />
             Ecosystem
           </Link>
-          <a href="#features" className="text-sm font-medium hover:text-primary transition-colors">
-            Features
-          </a>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={connectWallet} 
-            disabled={isConnecting || !!walletAddress}
-            className="ml-2 flex items-center"
-          >
-            <Wallet className="mr-2 h-4 w-4" />
-            {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)} (${balance} ETH)` : 'Connect Wallet'}
-          </Button>
+          
+          {userRole && (
+            <Link to="/dashboard" className="text-sm font-medium hover:text-primary transition-colors flex items-center">
+              <LayoutDashboard className="mr-1.5 h-4 w-4" />
+              Dashboard
+            </Link>
+          )}
+          
+          {walletAddress ? (
+            <div className="flex items-center space-x-2">
+              <div className="flex flex-col mr-2">
+                <span className="text-xs text-muted-foreground">
+                  {userRole ? `${userRole} Account` : 'Connected'}
+                </span>
+                <span className="text-sm font-medium">
+                  {`${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`}
+                </span>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleDisconnect}
+                className="flex items-center"
+              >
+                <LogOut className="mr-1 h-4 w-4" />
+                Disconnect
+              </Button>
+            </div>
+          ) : (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleConnectWallet} 
+              disabled={isConnecting}
+              className="ml-2 flex items-center"
+            >
+              <Wallet className="mr-2 h-4 w-4" />
+              {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+            </Button>
+          )}
         </nav>
 
         {/* Mobile Menu Button */}
@@ -83,19 +131,49 @@ const Navbar = () => {
             <Globe className="mr-1.5 h-4 w-4" />
             Ecosystem
           </Link>
-          <a href="#features" className="text-sm font-medium hover:text-primary" onClick={() => setMenuOpen(false)}>
-            Features
-          </a>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => { connectWallet(); setMenuOpen(false); }} 
-            disabled={isConnecting || !!walletAddress}
-            className="flex items-center justify-center"
-          >
-            <Wallet className="mr-2 h-4 w-4" />
-            {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Connect Wallet'}
-          </Button>
+          
+          {userRole && (
+            <Link to="/dashboard" className="text-sm font-medium hover:text-primary flex items-center" onClick={() => setMenuOpen(false)}>
+              <LayoutDashboard className="mr-1.5 h-4 w-4" />
+              Dashboard
+            </Link>
+          )}
+          
+          {walletAddress ? (
+            <>
+              <div className="flex flex-col py-2 px-4 bg-gray-50 rounded-md">
+                <span className="text-xs text-muted-foreground">
+                  {userRole ? `${userRole} Account` : 'Connected'}
+                </span>
+                <span className="text-sm font-medium">
+                  {`${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`}
+                </span>
+                <span className="text-xs mt-1">
+                  {balance} ETH
+                </span>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => { handleDisconnect(); setMenuOpen(false); }}
+                className="flex items-center justify-center"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Disconnect
+              </Button>
+            </>
+          ) : (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => { handleConnectWallet(); setMenuOpen(false); }} 
+              disabled={isConnecting}
+              className="flex items-center justify-center"
+            >
+              <Wallet className="mr-2 h-4 w-4" />
+              {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+            </Button>
+          )}
         </div>
       )}
     </header>
